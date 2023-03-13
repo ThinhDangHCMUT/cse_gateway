@@ -94,14 +94,9 @@ def readSerial():
             else:
                 mess = mess[end+1:]
 
-entry_dict = {
-    "temperature": "",
-    "humidity": ""
-}
 
 while True:
-    entry_dict["humidity"] = random.randint(30,100)
-    entry_dict["temperature"] = random.randint(0,40)
-    client.publish("v1/devices/me/telemetry", json.dumps(entry_dict))
-    print(json.dumps(entry_dict))
-    time.sleep(5)
+    if isMicrobitConnected:
+        readSerial()
+
+    time.sleep(1)
