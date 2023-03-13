@@ -1,11 +1,12 @@
-import serial.tools.list_ports
+# import serial.tools.list_ports
 import paho.mqtt.client as mqttclient
 import time
 import json
+import random
 
 BROKER_ADDRESS = "demo.thingsboard.io"
 PORT = 1883
-THINGS_BOARD_ACCESS_TOKEN = "V7mNA0GKKLF6Ju2OlSNQ"
+THINGS_BOARD_ACCESS_TOKEN = ""
 
 
 
@@ -68,7 +69,6 @@ entry_dict = {
     "HUMIDITY": "",
 }
 
-//!TEMPERATURE:26#
 def processData(data):
     data = data.replace("!", "")
     data = data.replace("#", "")
