@@ -1,11 +1,12 @@
-import serial.tools.list_ports
+# import serial.tools.list_ports
 import paho.mqtt.client as mqttclient
 import time
 import json
+import random
 
 BROKER_ADDRESS = "demo.thingsboard.io"
 PORT = 1883
-THINGS_BOARD_ACCESS_TOKEN = "V7mNA0GKKLF6Ju2OlSNQ"
+THINGS_BOARD_ACCESS_TOKEN = ""
 
 
 
@@ -68,7 +69,6 @@ entry_dict = {
     "HUMIDITY": "",
 }
 
-//!TEMPERATURE:26#
 def processData(data):
     data = data.replace("!", "")
     data = data.replace("#", "")
@@ -94,9 +94,14 @@ def readSerial():
             else:
                 mess = mess[end+1:]
 
+entry_dict = {
+    "temperature": "",
+    "humidity": ""
+}
 
 while True:
-    if isMicrobitConnected:
-        readSerial()
-
-    time.sleep(1)
+    entry_dict["humidity"] = random.randint(30,100)
+    entry_dict["temperature"] = random.randint(0,40)
+    client.publish("v1/devices/me/telemetry", json.dumps(entry_dict))
+    print(json.dumps(entry_dict))
+    time.sleep(5)
