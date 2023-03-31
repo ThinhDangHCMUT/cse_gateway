@@ -6,7 +6,7 @@ import random
 
 BROKER_ADDRESS = "demo.thingsboard.io"
 PORT = 1883
-THINGS_BOARD_ACCESS_TOKEN = "yTB4wHMvOMxyOQQy9nC2"
+THINGS_BOARD_ACCESS_TOKEN = "0sTMJfnC6E6konvdMvhd"
 
 
 
@@ -85,8 +85,8 @@ if getPort() != "None":
 
 # mess = ""
 entry_dict = {
-    "TEMPERATURE": "",
-    "HUMIDITY": "",
+    "temperature": "",
+    "humidity": "",
 }
 methodSensor = {
     "method": "",
@@ -99,26 +99,26 @@ def processData(data):
     data = data.replace("#", "")
     splitData = data.split(":")
     print(splitData)
-    entry_dict["TEMPERATURE"] = splitData[0]
-    entry_dict["HUMIDITY"] = splitData[1]
-    print(type(entry_dict["HUMIDITY"]))
+    entry_dict["temperature"] = splitData[0]
+    entry_dict["humidity"] = splitData[1]
+    print(type(entry_dict["humidity"]))
     print(json.dumps(entry_dict))
     # Automatic in gateway
     client.publish("v1/devices/me/telemetry", json.dumps(entry_dict))
     if autoMode == 1:
-        if  float(entry_dict["HUMIDITY"]) < 60:
+        if  float(entry_dict["humidity"]) < 60:
             methodSensor["method"] = "setFan"
             methodSensor["params"] = "On"
             client.publish("v1/devices/me/attributes", json.dumps(methodSensor),1)
-        if  float(entry_dict["HUMIDITY"]) > 80:
+        if  float(entry_dict["humidity"]) > 80:
             methodSensor["method"] = "setFan"
             methodSensor["params"] = "Off"
             client.publish("v1/devices/me/attributes", json.dumps(methodSensor),1)
-        if  float(entry_dict["TEMPERATURE"]) > 30:
+        if  float(entry_dict["temperature"]) > 30:
             methodSensor["method"] = "setAir"
             methodSensor["params"] = "On"
             client.publish("v1/devices/me/attributes", json.dumps(methodSensor),1)
-        if  float(entry_dict["TEMPERATURE"]) < 20:
+        if  float(entry_dict["temperature"]) < 20:
             methodSensor["method"] = "setAir"
             methodSensor["params"] = "Off"
             client.publish("v1/devices/me/attributes", json.dumps(methodSensor),1)
