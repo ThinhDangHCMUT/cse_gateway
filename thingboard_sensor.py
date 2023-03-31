@@ -60,8 +60,8 @@ if getPort() != "None":
 
 # mess = ""
 entry_dict = {
-    "TEMPERATURE": "",
-    "HUMIDITY": "",
+    "temperature": "",
+    "humidity": "",
 }
 methodSensor = {
     "method": "",
@@ -73,9 +73,9 @@ def processData(data):
     data = data.replace("#", "")
     splitData = data.split(":")
     print(splitData)
-    entry_dict["TEMPERATURE"] = splitData[0]
-    entry_dict["HUMIDITY"] = splitData[1]
-    # print(type(entry_dict["HUMIDITY"]))
+    entry_dict["temperature"] = splitData[0]
+    entry_dict["humidity"] = splitData[1]
+    # print(type(entry_dict["humidity"]))
     print(json.dumps(entry_dict))
    
 
