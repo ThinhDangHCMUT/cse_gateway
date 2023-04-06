@@ -77,6 +77,8 @@ def processData(data):
     entry_dict["humidity"] = splitData[1]
     # print(type(entry_dict["humidity"]))
     print(json.dumps(entry_dict))
+    client.publish("v1/devices/me/telemetry", json.dumps(entry_dict))
+
    
 
 mess = ""

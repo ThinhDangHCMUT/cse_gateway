@@ -6,7 +6,7 @@ import random
 
 BROKER_ADDRESS = "demo.thingsboard.io"
 PORT = 1883
-THINGS_BOARD_ACCESS_TOKEN = "FAekS7wwfaypuQjI6wzQ"
+THINGS_BOARD_ACCESS_TOKEN = ["FAekS7wwfaypuQjI6wzQ", "XyWXw29GpXfinUZraksa"]
 
 # topic = "v1/devices/me/rpc/response/+"
 
@@ -14,9 +14,10 @@ def subscribed(client, userdata, mid, granted_qos):
     print("Subscribed...")
 
 autoMode = 0
+count = 0 
 def recv_message(client, userdata, message):
-    # print("Received: ", message.payload.decode("utf-8"))
-    print("Received: ", json.loads(message.payload))
+    print("Device received: ", json.loads(message.payload)['shared']['id'])
+    print("Data Received: ", json.loads(message.payload)['shared'])
     cmd = 0
     try:
         jsonobj = json.loads(message.payload)['shared']
@@ -24,6 +25,10 @@ def recv_message(client, userdata, message):
             autoMode = 1
         if jsonobj['method'] == "autoMode" and jsonobj['params'] == "inactive":
             autoMode = 0
+        if jsonobj['method'] == "setAll" and jsonobj['params'] == "On":
+            cmd = 'a'
+        if jsonobj['method'] == "setAll" and jsonobj['params'] == "Off":
+            cmd = 'b'
         if jsonobj['method'] == "setFan_1" and jsonobj['params'] == "On":
             cmd = 0
         if jsonobj['method'] == "setFan_1" and jsonobj['params'] == "Off":
@@ -32,10 +37,7 @@ def recv_message(client, userdata, message):
             cmd = 2
         if jsonobj['method'] == "setFan_2" and jsonobj['params'] == "Off":
             cmd = 3
-        if jsonobj['method'] == "setFan_3" and jsonobj['params'] == "On":
-            cmd = 'a'
-        if jsonobj['method'] == "setFan_3" and jsonobj['params'] == "Off":
-            cmd = 'b'
+       
     except:
         pass
     if isMicrobitConnected:
@@ -51,16 +53,18 @@ def connected(client, usedata, flags, rc):
     else:
         print("Connection is failed")
 
+clients = []
+for access_token in THINGS_BOARD_ACCESS_TOKEN:
+    client = mqttclient.Client("Gateway_Thingsboard")
+    client.username_pw_set(access_token)
+    clients.append(client)
 
-client = mqttclient.Client("Gateway_Thingsboard")
-client.username_pw_set(THINGS_BOARD_ACCESS_TOKEN)
-
-client.on_connect = connected
-client.connect(BROKER_ADDRESS, 1883)
-client.loop_start()
-
-client.on_subscribe = subscribed
-client.on_message = recv_message
+for client in clients:     
+    client.on_connect = connected
+    client.connect(BROKER_ADDRESS, 1883)
+    client.loop_start()
+    client.on_subscribe = subscribed
+    client.on_message = recv_message
 
 
 def getPort():
@@ -90,8 +94,8 @@ entry_dict = {
     "humidity": "",
 }
 methodSensor = {
-    "method": "",
-    "params": ""
+    "method": "SetAll",
+    "params": "Off"
 }
 
 
@@ -110,20 +114,16 @@ def processData(data):
         if  float(entry_dict["humidity"]) < 60:
             methodSensor["method"] = "setFan"
             methodSensor["params"] = "On"
-            client.publish("v1/devices/me/attributes", json.dumps(methodSensor),1)
         if  float(entry_dict["humidity"]) > 80:
             methodSensor["method"] = "setFan"
             methodSensor["params"] = "Off"
-            client.publish("v1/devices/me/attributes", json.dumps(methodSensor),1)
         if  float(entry_dict["temperature"]) > 30:
             methodSensor["method"] = "setAir"
             methodSensor["params"] = "On"
-            client.publish("v1/devices/me/attributes", json.dumps(methodSensor),1)
         if  float(entry_dict["temperature"]) < 20:
             methodSensor["method"] = "setAir"
             methodSensor["params"] = "Off"
-            client.publish("v1/devices/me/attributes", json.dumps(methodSensor),1)
-        
+   
 
 mess = ""
 def readSerial():
@@ -141,15 +141,14 @@ def readSerial():
             else:
                 mess = mess[end+1:]
 
-myStatus = ["On", "Off"]
-
 while True:
     if isMicrobitConnected:
         print("Yolobit access is accepted!")
         readSerial()
-    methodSensor['method'] = 'setMotor1'
-    methodSensor['params'] = random.shuffle(myStatus)
-    client.publish("v1/devices/me/attributes", json.dumps(methodSensor))
-    
-    client.publish('v1/devices/me/attributes/request/1', '{"sharedKeys":"method,params"}')
-    time.sleep(1)
+
+    for client in clients:
+        print(autoMode)
+        if(autoMode == 1):
+            client.publish("v1/devices/me/attributes/1", json.dumps(methodSensor))
+        client.publish('v1/devices/me/attributes/request/1', '{"sharedKeys":"method,params,id"}')
+    time.sleep(5)
